@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { ok, err, Result } from 'neverthrow';
 import { UserAlreadyExistsError, UserNotFound } from './errors/user.errors';
 import { UpdateUserDTO } from './dto/update-user.dto';
+import { UserDto } from './dto/user.dto';
 
 @Injectable()
 export class UserService {
@@ -13,7 +14,7 @@ export class UserService {
 
   async create(
     data: CreateUserDTO,
-  ): Promise<Result<User, UserAlreadyExistsError>> {
+  ): Promise<Result<UserDto, UserAlreadyExistsError>> {
     const isUserAlreadyRegistered = await this.userRepo.findByEmail(data.email);
 
     if (isUserAlreadyRegistered) {
@@ -44,12 +45,7 @@ export class UserService {
   async updateUser(
     id: string,
     data: UpdateUserDTO,
-  ): Promise<Result<User, UserAlreadyExistsError>> {
-    const userExists = await this.userRepo.findById(id);
-    if (!userExists) {
-      return err(new UserNotFound());
-    }
-
+  ): Promise<Result<UserDto, UserAlreadyExistsError>> {
     const isAvailableEmail = await this.userRepo.findByEmail(data.email);
 
     if (
