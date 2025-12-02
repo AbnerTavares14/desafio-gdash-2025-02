@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nest-backend
+    ports:
+      - '3000:3000'
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - app-network
+    depends_on:
+      mongo-init:
+        condition: service_completed_successfully
+      mongodb:
+        condition: service_started
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb-gdash
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - '27017:27017'
+    env_file:
+      - ./backend/.env
+    environment:
+      - USERNAME=${MONGO_USERNAME}
+      - PASSWORD=${MONGO_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - app-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mongo-init:
+    image: mongo:6.0
+    container_name: mongo-init
+    restart: "no"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - app-network
+    command: >
+      mongosh --host mongodb:27017 --eval 
+      '
+      try {
+        rs.status();
+        print("Replica Set já inicializado.");
+      } catch (e) {
+        rs.initiate({ _id: "rs0", members: [{ _id: 0, host: "mongodb:27017" }] });
+        print("Replica Set inicializado com sucesso.");
+      }
+      '
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
