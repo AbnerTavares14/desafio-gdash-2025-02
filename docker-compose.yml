@@ -62,6 +62,57 @@ services:
         print("Replica Set inicializado com sucesso.");
       }
       '
+  weather-service:
+    build: 
+      context: ./weather-service
+    container_name: python-weather-service
+    depends_on:
+      - rabbitmq 
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=guest 
+      - RABBITMQ_PASS=guest
+      - LATITUDE=-15.8973
+      - LONGITUDE=-52.2301
+    networks:
+      - app-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-gdash
+    ports:
+      - "5672:5672" 
+      - "15672:15672" 
+    networks:
+      - app-network
+
+  go-worker:
+    build:
+      context: ./go-worker
+    container_name: go-weather-worker
+    depends_on:
+      - rabbitmq
+      - backend
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - API_URL=http://nest-backend:3000/api/weather/logs
+    networks:
+      - app-network
+  
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: react-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules 
+    depends_on:
+      - backend
+    networks:
+      - app-network
 
 networks:
   app-network:

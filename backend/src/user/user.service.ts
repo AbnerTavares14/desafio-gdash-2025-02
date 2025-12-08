@@ -47,7 +47,7 @@ export class UserService {
     data: UpdateUserDTO,
   ): Promise<Result<UserDto, UserAlreadyExistsError>> {
     const isAvailableEmail = await this.userRepo.findByEmail(data.email);
-
+    console.log(id);
     if (
       isAvailableEmail &&
       isAvailableEmail.email === data.email &&

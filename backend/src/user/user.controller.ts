@@ -57,7 +57,9 @@ export class UserController {
   }
 
   @Put()
+  @UseGuards(AuthGuard('jwt'))
   async update(@CurrentUser() currentUser, @Body() updateUser: UpdateUserDTO) {
+    console.log(currentUser);
     const result = await this.userService.updateUser(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
       currentUser.id,
@@ -79,6 +81,7 @@ export class UserController {
 
   @Delete()
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(AuthGuard('jwt'))
   async delete(@CurrentUser() currentUser) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     const result = await this.userService.deleteUser(currentUser?.id);
