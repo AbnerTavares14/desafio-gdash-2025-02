@@ -52,4 +52,10 @@ export class WeatherController {
     res.header('Content-Disposition', 'attachment; filename=weather_data.xlsx');
     res.send(buffer);
   }
+
+  @Get('insights')
+  async getInsights() {
+    const insight = await this.weatherService.generateInsights();
+    return { text: insight };
+  }
 }

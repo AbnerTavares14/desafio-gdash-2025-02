@@ -70,3 +70,9 @@ Para acessar o Dashboard, utilize as credenciais geradas automaticamente:
 - [x] Dockerização completa com hot-reload.
 
 ---
+
+VÍDEO APRESENTAÇÃO DO PROJETO:
+
+https://www.loom.com/share/056a80cb2ee3494cbcab027384bfb1e0
+
+Não consegui baixar o vídeo do loom, como não deu tempo de regravar e upar no youtube, vou deixar só o link do loom mesmo
