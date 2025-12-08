@@ -8,12 +8,16 @@ import { CreateWeatherLogDto } from './dto/weather-log.dto';
 import { ok, err, Result } from 'neverthrow';
 import { Prisma, WeatherLog } from '@prisma/client';
 import { WeatherCreationError } from './errors/weather.error';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as ExcelJS from 'exceljs';
 import { Parser } from 'json2csv';
 
 @Injectable()
 export class WeatherService {
-  constructor(private readonly weatherRepository: WeatherRepository) {}
+  private genAI: GoogleGenerativeAI;
+  constructor(private readonly weatherRepository: WeatherRepository) {
+    this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+  }
 
   async createLog(
     data: CreateWeatherLogDto,
@@ -57,6 +61,46 @@ export class WeatherService {
       return err(
         new WeatherCreationError('Falha ao persistir dados climáticos'),
       );
+    }
+  }
+
+  async generateInsights(): Promise<string> {
+    try {
+      const logs = await this.weatherRepository.findAll();
+      const recentLogs = logs.slice(0, 24);
+
+      if (recentLogs.length === 0) return 'Dados insuficientes.';
+
+      const dataContext = recentLogs
+        .map(
+          (log) =>
+            `- ${log.collectedAt.toLocaleString('pt-BR')}: ${log.temperature}°C, ${log.humidity}%, ${log.conditionString}`,
+        )
+        .join('\n');
+
+      const prompt = `
+        Analise os dados climáticos abaixo:
+        ${dataContext}
+
+        Gere um relatório curto cobrindo EXATAMENTE estes pontos:
+        1. Médias: Calcule a média de temperatura e umidade do período.
+        2. Tendência: A temperatura está subindo, caindo ou estável?
+        3. Classificação: Classifique o dia como "Frio", "Quente", "Agradável" ou "Chuvoso".
+        4. Pontuação de Conforto: Dê uma nota de 0 a 100 baseada em temperatura/umidade ideais (22°C/50% seria 100).
+        5. Alertas: Algum risco de chuva forte ou calor extremo? Se não, diga "Sem alertas".
+        6. Resumo: Uma frase final resumindo tudo.
+
+        Formate a resposta como um texto corrido e natural, usando emojis para destacar os tópicos. Não use Markdown ou negrito.
+      `;
+
+      const model = this.genAI.getGenerativeModel({
+        model: 'gemini-flash-latest',
+      });
+      const result = await model.generateContent(prompt);
+      return result.response.text();
+    } catch (error) {
+      console.error('Erro IA:', error);
+      return 'IA indisponível.';
     }
   }
 
