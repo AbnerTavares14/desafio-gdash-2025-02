@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { WeatherRepository } from './repositories/weather.repository';
 import { CreateWeatherLogDto } from './dto/weather-log.dto';
 import { ok, err, Result } from 'neverthrow';
@@ -15,6 +15,7 @@ import { Parser } from 'json2csv';
 @Injectable()
 export class WeatherService {
   private genAI: GoogleGenerativeAI;
+  private readonly logger = new Logger(WeatherService.name);
   constructor(private readonly weatherRepository: WeatherRepository) {
     this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
   }
@@ -57,7 +58,7 @@ export class WeatherService {
 
       return ok(log);
     } catch (error) {
-      console.error('Erro ao salvar log:', error);
+      this.logger.error('Falha ao persistir dados climáticos', error.stack);
       return err(
         new WeatherCreationError('Falha ao persistir dados climáticos'),
       );
@@ -99,7 +100,7 @@ export class WeatherService {
       const result = await model.generateContent(prompt);
       return result.response.text();
     } catch (error) {
-      console.error('Erro IA:', error);
+      this.logger.error('Erro ao gerar insights', error.stack);
       return 'IA indisponível.';
     }
   }

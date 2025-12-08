@@ -52,5 +52,4 @@ export class WeatherController {
     res.header('Content-Disposition', 'attachment; filename=weather_data.xlsx');
     res.send(buffer);
   }
-
 }
