@@ -15,6 +15,10 @@ services:
       - /app/node_modules
     networks:
       - app-network
+    command: >
+      sh -c "npx prisma generate && 
+             npx prisma db seed && 
+             npm run start:dev"
     depends_on:
       mongo-init:
         condition: service_completed_successfully
