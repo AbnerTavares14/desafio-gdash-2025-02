@@ -16,3 +16,21 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 }
+
+model WeatherLog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  latitude    Float
+  longitude   Float
+  temperature Float    
+  humidity    Int      
+  windSpeed   Float    
+  condition   Int  
+  conditionString String    
+  precipitationProb Int      @default(0)
+  collectedAt DateTime
+  createdAt   DateTime @default(now())
+  
+  fullData    Json?    
+
+  @@map("weather_logs")
+}
