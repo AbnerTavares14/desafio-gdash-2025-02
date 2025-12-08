@@ -7,7 +7,7 @@ export class UpdateUserDTO {
   @IsString()
   @MinLength(8)
   @MaxLength(16)
-  password: string;
+  password?: string;
 
   @IsString()
   name: string;

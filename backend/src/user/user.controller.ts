@@ -59,7 +59,6 @@ export class UserController {
   @Put()
   @UseGuards(AuthGuard('jwt'))
   async update(@CurrentUser() currentUser, @Body() updateUser: UpdateUserDTO) {
-    console.log(currentUser);
     const result = await this.userService.updateUser(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
       currentUser.id,

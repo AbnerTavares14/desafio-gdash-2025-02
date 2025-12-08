@@ -18,9 +18,6 @@ export function DashboardHeader() {
           <h1 className="text-xl font-bold text-slate-800">GDASH Monitor</h1>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-slate-500 hidden md:inline">
-            Bem-vindo, Admin
-          </span>
           <Button variant="ghost" size="sm" onClick={() => navigate('/users')}>
             Comunidade
           </Button>

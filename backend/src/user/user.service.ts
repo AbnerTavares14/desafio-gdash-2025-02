@@ -47,17 +47,22 @@ export class UserService {
     data: UpdateUserDTO,
   ): Promise<Result<UserDto, UserAlreadyExistsError>> {
     const isAvailableEmail = await this.userRepo.findByEmail(data.email);
-    console.log(id);
     if (
       isAvailableEmail &&
       isAvailableEmail.email === data.email &&
-      id !== isAvailableEmail?.id
+      id !== isAvailableEmail.id
     ) {
       return err(new UserAlreadyExistsError(data.email));
     }
 
-    const newValues = new User(data);
-    const result = await this.userRepo.update(id, newValues);
+    if (data.password && data.password.trim() !== '') {
+      const salt = await bcrypt.genSalt();
+      data.password = await bcrypt.hash(data.password, salt);
+    } else {
+      delete data.password;
+    }
+
+    const result = await this.userRepo.update(id, data as User);
 
     return ok(result);
   }

@@ -27,7 +27,11 @@ import { Loader2, Save, Trash2, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export function Profile() {
-  const [formData, setFormData] = useState({ name: '', email: '' })
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+  })
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const navigate = useNavigate()
@@ -41,7 +45,11 @@ export function Profile() {
     try {
       setIsLoading(true)
       const response = await api.get(`/users/${userId}`)
-      setFormData({ name: response.data.name, email: response.data.email })
+      setFormData({
+        ...formData,
+        name: response.data.name,
+        email: response.data.email,
+      })
     } catch (error) {
       console.error(error)
       alert('Erro ao carregar perfil.')
@@ -54,8 +62,9 @@ export function Profile() {
     e.preventDefault()
     setIsSaving(true)
     try {
-      await api.put(`/users/${userId}`, formData)
+      await api.put(`/users/`, formData)
       alert('Perfil atualizado com sucesso!')
+      setFormData((prev) => ({ ...prev, password: '' }))
     } catch (error) {
       console.error(error)
       alert('Erro ao atualizar. Tente novamente.')
@@ -66,7 +75,7 @@ export function Profile() {
 
   async function handleDeleteAccount() {
     try {
-      await api.delete(`/users/${userId}`)
+      await api.delete(`/users/`)
       localStorage.removeItem('token')
       alert('Sua conta foi excluída.')
       navigate('/')
@@ -134,13 +143,21 @@ export function Profile() {
                     }
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Senha</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                  />
+                </div>
               </form>
             )}
           </CardContent>
           <CardFooter className="flex justify-between border-t p-6">
-            <div className="text-sm text-slate-500">
-              * Para alterar a senha, entre em contato com o suporte.
-            </div>
             <Button
               type="submit"
               form="profile-form"
